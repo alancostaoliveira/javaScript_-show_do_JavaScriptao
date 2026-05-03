@@ -1,3 +1,4 @@
+# Dependências e artefatos locais que não devem ir para o repositório.
 node_modules/
 dist/
 coverage/

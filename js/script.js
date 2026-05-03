@@ -16,6 +16,7 @@ const rodadaAtual = document.getElementById('rodadaAtual');
 const premioAtual = document.getElementById('premioAtual');
 const progress = document.getElementById('progress');
 const tabelaLista = document.getElementById('tabelaPontuacao');
+const btnLimpar = document.getElementById('btnLimpar');
 
 /**
  * Estado local da aplicação.
@@ -35,6 +36,166 @@ const estado = {
   pontuacao: tabelaPontuacao[0].parar,
   encerrado: false,
 };
+
+// Chaves usadas no localStorage para persistência
+const BEST_KEY = 'show_js_melhor_indice';
+const STATE_KEY = 'show_js_estado';
+
+/**
+ * Atualiza o elemento `#melhorPontuacao` com o texto do índice salvo.
+ * @param {number} idx
+ */
+function updateBestUI(idx) {
+  const el = document.getElementById('melhorPontuacao');
+  if (!el) {
+    return;
+  }
+  if (idx === null || Number.isNaN(Number(idx)) || Number(idx) < 0) {
+    el.textContent = '–';
+    return;
+  }
+  el.textContent =
+    tabelaPontuacao[Math.min(idx, tabelaPontuacao.length - 1)].acertar;
+}
+
+/**
+ * Carrega o índice do melhor resultado salvo e atualiza a UI.
+ */
+function loadBestFromStorage() {
+  try {
+    const raw = localStorage.getItem(BEST_KEY);
+    if (raw === null) {
+      return;
+    }
+    const idx = Number(raw);
+    if (!Number.isNaN(idx)) {
+      updateBestUI(idx);
+    }
+  } catch {
+    // Ignorar falhas de storage
+  }
+}
+
+/**
+ * Salva o melhor índice se for maior que o salvo anteriormente.
+ * @param {number} idx
+ */
+function saveBestIndex(idx) {
+  try {
+    const prev = Number(localStorage.getItem(BEST_KEY) ?? -1);
+    if (Number.isNaN(prev) || idx > prev) {
+      localStorage.setItem(BEST_KEY, String(idx));
+      updateBestUI(idx);
+    }
+  } catch {
+    // ignore
+  }
+}
+
+/**
+ * Salva um snapshot do estado atual para permitir retomada.
+ */
+function saveStateToStorage() {
+  try {
+    const payload = {
+      embaralhadasIdx: estado.embaralhadas.map((p) => perguntas.indexOf(p)),
+      indiceAtual: estado.indiceAtual,
+      pontuacao: estado.pontuacao,
+      encerrado: estado.encerrado,
+    };
+    localStorage.setItem(STATE_KEY, JSON.stringify(payload));
+  } catch {
+    // ignore
+  }
+}
+
+/**
+ * Tenta carregar um snapshot salvo. Retorna true se o estado foi restaurado.
+ * @returns {boolean}
+ */
+function loadStateFromStorage() {
+  try {
+    const raw = localStorage.getItem(STATE_KEY);
+    if (!raw) {
+      return false;
+    }
+    const payload = JSON.parse(raw);
+    if (!payload || !Array.isArray(payload.embaralhadasIdx)) {
+      return false;
+    }
+    const arr = payload.embaralhadasIdx
+      .map((i) => perguntas[i])
+      .filter(Boolean);
+    if (arr.length !== perguntas.length) {
+      return false;
+    }
+    estado.embaralhadas = arr;
+    estado.indiceAtual = Number(payload.indiceAtual) || 0;
+    estado.pontuacao = payload.pontuacao || estado.pontuacao;
+    estado.encerrado = !!payload.encerrado;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Limpa o snapshot salvo (usado ao reiniciar explicitamente).
+ */
+function clearSavedState() {
+  try {
+    localStorage.removeItem(STATE_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+/**
+ * Remove todas as chaves relacionadas ao progresso (snapshot + best)
+ */
+function clearAllSavedData() {
+  try {
+    localStorage.removeItem(STATE_KEY);
+    localStorage.removeItem(BEST_KEY);
+    updateBestUI(null);
+  } catch {
+    // ignore
+  }
+}
+
+/**
+ * Mostra um toast/flutuante com uma mensagem curta.
+ * @param {string} text
+ * @param {number} [timeout=2000]
+ */
+function showToast(text, timeout = 2000) {
+  try {
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'toast-container';
+      document.body.appendChild(container);
+    }
+
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = text;
+    container.appendChild(t);
+
+    // Forçar reflow para ativar animação
+    // A leitura de `offsetHeight` é intencional para disparar reflow
+    // e ativar a transição CSS.
+    void t.offsetHeight;
+    t.classList.add('show');
+
+    setTimeout(() => {
+      t.classList.remove('show');
+      setTimeout(() => container.removeChild(t), 250);
+    }, timeout);
+  } catch {
+    // ignore visual failures
+  }
+}
 
 /* Embaralhador (Fisher–Yates simplificado via sort):
    usado para variar a ordem das perguntas em cada rodada.
@@ -112,6 +273,17 @@ function encerraJogo(texto) {
   btnParar.disabled = true;
   btnReiniciar.hidden = false;
   mensagem.textContent = texto;
+  // Persiste estado final e atualiza melhor pontuação
+  try {
+    saveStateToStorage();
+    const achieved = Math.max(
+      0,
+      Math.min(estado.indiceAtual - 1, tabelaPontuacao.length - 1),
+    );
+    saveBestIndex(achieved);
+  } catch {
+    // ignore
+  }
 }
 
 /* Renderiza a pergunta atual: enunciado e botões de alternativas.
@@ -189,6 +361,9 @@ function confirmaResposta() {
   if (acertou) {
     estado.pontuacao = formataPremio(estado.indiceAtual);
     mensagem.textContent = `Correto. A resposta era ${respostaCorreta}.`;
+    // Atualiza melhor índice e persiste progresso
+    saveBestIndex(estado.indiceAtual);
+    saveStateToStorage();
     estado.indiceAtual += 1;
 
     if (estado.indiceAtual >= estado.embaralhadas.length) {
@@ -211,6 +386,9 @@ function confirmaResposta() {
       Math.min(estado.indiceAtual, tabelaPontuacao.length - 1)
     ].errar;
   mensagem.textContent = `Errado. A resposta certa era ${respostaCorreta}.`;
+  // Persiste o resultado parcial e marca melhor se for o caso
+  saveBestIndex(Math.min(estado.indiceAtual, tabelaPontuacao.length - 1));
+  saveStateToStorage();
   setTimeout(
     () => encerraJogo(`Fim de jogo. Você levou ${estado.pontuacao}.`),
     900,
@@ -230,6 +408,8 @@ function reiniciaJogo() {
 
   btnParar.disabled = false;
   btnReiniciar.hidden = true;
+  // Ao reiniciar, removemos qualquer snapshot salvo (o jogador começa do zero)
+  clearSavedState();
   renderizaPergunta();
 }
 
@@ -246,11 +426,33 @@ function pararJogo() {
     tabelaPontuacao[
       Math.min(estado.indiceAtual, tabelaPontuacao.length - 1)
     ].parar;
+  // Persiste progresso e melhor índice ao optar por parar
+  saveBestIndex(Math.min(estado.indiceAtual, tabelaPontuacao.length - 1));
+  saveStateToStorage();
   encerraJogo(`Você parou com ${estado.pontuacao}.`);
 }
 
 btnConfirmar.addEventListener('click', confirmaResposta);
 btnParar.addEventListener('click', pararJogo);
 btnReiniciar.addEventListener('click', reiniciaJogo);
+if (btnLimpar) {
+  btnLimpar.addEventListener('click', () => {
+    clearAllSavedData();
+    mensagem.textContent = 'Progresso salvo limpo.';
+    showToast('Progresso limpo');
+  });
+}
 
-renderizaPergunta();
+// Salva estado ao sair da página
+window.addEventListener('beforeunload', () => {
+  saveStateToStorage();
+});
+
+// Carrega melhor pontuação e tenta restaurar progresso salvo.
+loadBestFromStorage();
+if (!loadStateFromStorage()) {
+  renderizaPergunta();
+} else {
+  // Se restauramos, re-renderiza com o estado salvo
+  renderizaPergunta();
+}
