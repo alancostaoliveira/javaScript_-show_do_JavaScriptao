@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Quiz interativo inspirado no Show do Milhão para praticar JavaScript."
+    />
+    <title>Show do JavaScriptão</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Anton+SC&family=B612+Mono:wght@400;700&family=Montserrat:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+    <script type="module" src="js/script.js"></script>
+  </head>
+  <body>
+    <main class="app">
+      <section class="game-panel">
+        <header class="hero">
+          <p class="eyebrow">Quiz interativo</p>
+          <h1>Show do JavaScriptão</h1>
+          <p class="hero-copy">
+            Escolha uma alternativa, confirme a resposta e descubra até onde
+            você consegue ir.
+          </p>
+        </header>
+
+        <article class="question-card">
+          <div class="question-meta">
+            <span id="progress">Pergunta 1 de 1</span>
+            <span class="question-badge">Ao vivo</span>
+          </div>
+
+          <h2 id="enunciado">Carregando pergunta...</h2>
+
+          <div id="alternativas" class="alternativas" role="list"></div>
+        </article>
+
+        <div class="actions">
+          <button id="btnConfirmar" class="button button-primary" disabled>
+            Confirmar resposta
+          </button>
+          <button id="btnParar" class="button button-secondary">Parar</button>
+          <button id="btnReiniciar" class="button button-ghost" hidden>
+            Jogar novamente
+          </button>
+        </div>
+      </section>
+
+      <aside class="sidebar">
+        <section class="status-card">
+          <h3>Resultado</h3>
+          <p id="mensagem" class="status-message" aria-live="polite">
+            Escolha uma alternativa para começar.
+          </p>
+
+          <div class="stats">
+            <div>
+              <span>Rodada</span>
+              <strong id="rodadaAtual">1</strong>
+            </div>
+            <div>
+              <span>Prêmio atual</span>
+              <strong id="premioAtual">R$ 0</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="score-card">
+          <h3>Premiação</h3>
+          <ol id="tabelaPontuacao" class="score-list"></ol>
+        </section>
+      </aside>
+    </main>
+  </body>
+</html>

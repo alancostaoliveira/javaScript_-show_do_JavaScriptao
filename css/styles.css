@@ -1,0 +1,351 @@
+:root {
+  color-scheme: dark;
+  --bg-start: #050722;
+  --bg-end: #10194f;
+  --panel: rgba(10, 16, 47, 0.78);
+  --panel-border: rgba(255, 204, 0, 0.28);
+  --primary: #ffcc00;
+  --primary-strong: #ffc107;
+  --accent: #ff5c35;
+  --accent-soft: #1f3cff;
+  --text: #f7f8ff;
+  --muted: rgba(247, 248, 255, 0.72);
+  --shadow: 0 30px 80px rgba(0, 0, 0, 0.38);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--text);
+  font-family: 'Montserrat', sans-serif;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(255, 204, 0, 0.16),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(255, 92, 53, 0.18),
+      transparent 28%
+    ),
+    linear-gradient(145deg, var(--bg-start), var(--bg-end));
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.app {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1.9fr) minmax(320px, 0.9fr);
+  gap: 28px;
+  padding: 28px;
+}
+
+.game-panel,
+.sidebar {
+  position: relative;
+  border: 1px solid var(--panel-border);
+  background: var(--panel);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
+  border-radius: 28px;
+}
+
+.game-panel {
+  padding: 32px;
+  display: grid;
+  gap: 26px;
+  align-content: start;
+}
+
+.hero {
+  display: grid;
+  gap: 12px;
+}
+
+.eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+h1 {
+  margin: 0;
+  font-family: 'Anton SC', sans-serif;
+  font-size: clamp(3rem, 7vw, 5.6rem);
+  line-height: 0.95;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  text-shadow: 0 6px 0 rgba(255, 92, 53, 0.55);
+}
+
+.hero-copy {
+  margin: 0;
+  max-width: 60ch;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.question-card,
+.status-card,
+.score-card {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  background: rgba(2, 4, 20, 0.4);
+}
+
+.question-card {
+  padding: 24px;
+  display: grid;
+  gap: 22px;
+}
+
+.question-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.question-badge {
+  color: var(--primary);
+  font-weight: 800;
+}
+
+#enunciado {
+  margin: 0;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  line-height: 1.25;
+}
+
+.alternativas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.alternativa {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  padding: 18px 18px 18px 64px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.alternativa::before {
+  content: attr(data-letter);
+  position: absolute;
+  inset: 50% auto auto 18px;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--primary);
+  color: #111;
+  font-family: 'B612 Mono', monospace;
+  font-weight: 700;
+}
+
+.alternativa:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 204, 0, 0.48);
+}
+
+.alternativa.selecionada {
+  border-color: rgba(255, 204, 0, 0.92);
+  background: rgba(255, 204, 0, 0.14);
+  color: #fff;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.button {
+  border: 0;
+  border-radius: 16px;
+  padding: 14px 18px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    opacity 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button-primary {
+  background: var(--primary);
+  color: #151515;
+}
+
+.button-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+}
+
+.button-ghost {
+  background: transparent;
+  color: var(--primary);
+  border: 1px solid rgba(255, 204, 0, 0.34);
+}
+
+.sidebar {
+  padding: 24px;
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+
+.status-card,
+.score-card {
+  padding: 20px;
+}
+
+.status-card h3,
+.score-card h3 {
+  margin: 0 0 14px;
+  font-family: 'Anton SC', sans-serif;
+  font-size: 1.6rem;
+  letter-spacing: 0.04em;
+}
+
+.status-message {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+  min-height: 3.2em;
+}
+
+.stats {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.stats div {
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.stats span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.stats strong {
+  font-size: 1.12rem;
+}
+
+.score-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.score-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+}
+
+.score-list li[data-active='true'] {
+  background: rgba(255, 204, 0, 0.14);
+  color: var(--text);
+  border: 1px solid rgba(255, 204, 0, 0.5);
+}
+
+.score-list .valor {
+  font-family: 'B612 Mono', monospace;
+  font-weight: 700;
+  color: var(--primary-strong);
+}
+
+@media (max-width: 1080px) {
+  .app {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .app {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .game-panel,
+  .sidebar {
+    border-radius: 22px;
+    padding: 18px;
+  }
+
+  .alternativas {
+    grid-template-columns: 1fr;
+  }
+
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .button {
+    width: 100%;
+  }
+}
