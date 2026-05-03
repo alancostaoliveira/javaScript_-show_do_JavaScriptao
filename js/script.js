@@ -1,3 +1,9 @@
+/**
+ * js/script.js
+ * Lógica do quiz: renderização, estado e controle de fluxo.
+ * - Importa `perguntas` e `tabelaPontuacao` de `js/data.js`.
+ * - Mantém um `estado` local simples para controlar o fluxo do jogo.
+ */
 import { perguntas, tabelaPontuacao } from './data.js';
 
 const enunciado = document.getElementById('enunciado');
@@ -11,22 +17,52 @@ const premioAtual = document.getElementById('premioAtual');
 const progress = document.getElementById('progress');
 const tabelaLista = document.getElementById('tabelaPontuacao');
 
+/**
+ * Estado local da aplicação.
+ * @typedef {Object} Estado
+ * @property {Array} embaralhadas - perguntas embaralhadas para a sessão
+ * @property {number} indiceAtual - índice da pergunta atual (0-based)
+ * @property {number|null} selecionada - alternativa selecionada (0-based) ou null
+ * @property {string} pontuacao - prêmio exibido ao usuário
+ * @property {boolean} encerrado - quando true bloqueia interações
+ */
+
+/** @type {Estado} */
 const estado = {
-  embaralhadas: embaralhaPerguntas(perguntas),
+  embaralhadas: embaralhaPerguntas(perguntas), // perguntas embaralhadas
   indiceAtual: 0,
   selecionada: null,
   pontuacao: tabelaPontuacao[0].parar,
   encerrado: false,
 };
 
+/* Embaralhador (Fisher–Yates simplificado via sort):
+   usado para variar a ordem das perguntas em cada rodada.
+*/
+/**
+ * Embaralha uma lista de perguntas e retorna uma nova array.
+ * @param {Array} lista - array de perguntas
+ * @returns {Array} - nova array embaralhada
+ */
 function embaralhaPerguntas(lista) {
   return [...lista].sort(() => Math.random() - 0.5);
 }
 
+// Retorna o valor do prêmio para o índice informado
+/**
+ * Retorna o valor do prêmio associado a um índice de rodada.
+ * @param {number} indice
+ * @returns {string}
+ */
 function formataPremio(indice) {
   return tabelaPontuacao[Math.min(indice, tabelaPontuacao.length - 1)].acertar;
 }
 
+// Atualiza a lista lateral de premiações (tabela de pontuação)
+/**
+ * Atualiza a lista lateral de premiações (tabela de pontuação).
+ * Não retorna valor; atualiza o DOM em `tabelaLista`.
+ */
 function atualizaTabela() {
   tabelaLista.innerHTML = '';
 
@@ -41,6 +77,10 @@ function atualizaTabela() {
   });
 }
 
+// Atualiza indicadores visuais: rodada, prêmio e progresso
+/**
+ * Atualiza indicadores visuais: rodada atual, prêmio e progresso.
+ */
 function atualizaIndicadores() {
   rodadaAtual.textContent = String(
     Math.min(estado.indiceAtual + 1, perguntas.length),
@@ -49,6 +89,10 @@ function atualizaIndicadores() {
   progress.textContent = `Pergunta ${Math.min(estado.indiceAtual + 1, perguntas.length)} de ${perguntas.length}`;
 }
 
+// Limpa a seleção atual do usuário e desabilita o botão de confirmar
+/**
+ * Limpa a seleção atual do usuário e desabilita o botão de confirmação.
+ */
 function limpaSelecao() {
   document.querySelectorAll('.alternativa').forEach((botao) => {
     botao.classList.remove('selecionada');
@@ -57,6 +101,11 @@ function limpaSelecao() {
   btnConfirmar.disabled = true;
 }
 
+// Define fim do jogo e atualiza a UI com a mensagem final
+/**
+ * Finaliza o jogo: bloqueia interações e exibe a mensagem final.
+ * @param {string} texto - mensagem a ser exibida no fim
+ */
 function encerraJogo(texto) {
   estado.encerrado = true;
   btnConfirmar.disabled = true;
@@ -65,6 +114,13 @@ function encerraJogo(texto) {
   mensagem.textContent = texto;
 }
 
+/* Renderiza a pergunta atual: enunciado e botões de alternativas.
+   - Cria elementos dinamicamente e adiciona handlers de clique.
+*/
+/**
+ * Renderiza a pergunta atual no DOM: cria botões de alternativa e handlers.
+ * Se não houver mais perguntas, encerra o jogo.
+ */
 function renderizaPergunta() {
   if (estado.indiceAtual >= estado.embaralhadas.length) {
     encerraJogo(`Você concluiu o quiz com ${estado.pontuacao}.`);
@@ -84,6 +140,8 @@ function renderizaPergunta() {
     botao.setAttribute('role', 'listitem');
     botao.textContent = alternativa;
 
+    // Ao clicar em uma alternativa: marcar seleção e habilitar confirmação
+    // Ao clicar em uma alternativa: marcar seleção e habilitar confirmação
     botao.addEventListener('click', () => {
       if (estado.encerrado) {
         return;
@@ -102,12 +160,23 @@ function renderizaPergunta() {
     alternativasContainer.appendChild(botao);
   });
 
+  // Pós-render: garantir que os indicadores estejam sincronizados
+  // Pós-render: garantir que os indicadores estejam sincronizados
   limpaSelecao();
   atualizaIndicadores();
   atualizaTabela();
   mensagem.textContent = 'Escolha uma alternativa para continuar.';
 }
 
+/* Verifica a resposta selecionada, atualiza pontuação e avança/encerra.
+   - Se correta: atualiza prêmio e passa à próxima pergunta.
+   - Se errada: encerra o jogo com prêmio de insegurança (errado).
+*/
+/**
+ * Valida a resposta selecionada pelo usuário.
+ * - Atualiza pontuação em caso de acerto.
+ * - Encerra o jogo em caso de erro.
+ */
 function confirmaResposta() {
   if (estado.encerrado || estado.selecionada === null) {
     return;
@@ -136,6 +205,7 @@ function confirmaResposta() {
     return;
   }
 
+  // Resposta errada: define pontuação do erro e encerra
   estado.pontuacao =
     tabelaPontuacao[
       Math.min(estado.indiceAtual, tabelaPontuacao.length - 1)
@@ -147,6 +217,10 @@ function confirmaResposta() {
   );
 }
 
+// Reinicia o estado do jogo para jogar novamente
+/**
+ * Reinicia o estado do jogo para iniciar uma nova sessão.
+ */
 function reiniciaJogo() {
   estado.embaralhadas = embaralhaPerguntas(perguntas);
   estado.indiceAtual = 0;
@@ -159,6 +233,10 @@ function reiniciaJogo() {
   renderizaPergunta();
 }
 
+// Parar o jogo: jogador decide encerrar mantendo prêmio de "parar"
+/**
+ * O jogador decide parar: encerra o jogo mantendo o prêmio de "parar".
+ */
 function pararJogo() {
   if (estado.encerrado) {
     return;

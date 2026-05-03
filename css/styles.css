@@ -1,8 +1,15 @@
+/*
+  css/styles.css
+  - Variáveis de tema em :root
+  - Regras globais e componentes organizados por seções
+  - Evite estilos inline no HTML; prefira classes aqui
+*/
+
 :root {
   color-scheme: dark;
-  --bg-start: #050722;
-  --bg-end: #10194f;
-  --panel: rgba(10, 16, 47, 0.78);
+  --bg-start: #ebebf0;
+  --bg-end: #152269;
+  --panel: rgba(18, 28, 78, 0.78);
   --panel-border: rgba(255, 204, 0, 0.28);
   --primary: #ffcc00;
   --primary-strong: #ffc107;
@@ -48,6 +55,7 @@ select {
 }
 
 .app {
+  /* Layout principal: grid com painel do jogo e sidebar */
   min-height: 100vh;
   display: grid;
   grid-template-columns: minmax(0, 1.9fr) minmax(320px, 0.9fr);
@@ -66,6 +74,7 @@ select {
 }
 
 .game-panel {
+  /* Painel contendo título, pergunta e ações */
   padding: 32px;
   display: grid;
   gap: 26px;
@@ -143,6 +152,7 @@ h1 {
 }
 
 .alternativa {
+  /* Botões de alternativa: visual, padding e estado de seleção */
   width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 18px;

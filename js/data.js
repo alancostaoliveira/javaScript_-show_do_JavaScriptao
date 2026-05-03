@@ -1,3 +1,19 @@
+/*
+  js/data.js
+  - Lista de perguntas e tabela de pontuação exportadas como módulos.
+  - `perguntas`: array de objetos { enunciado, alternativas, resposta }.
+    - `resposta` é o índice (0-based) da alternativa correta.
+  - `tabelaPontuacao`: array com os valores para cada rodada.
+  Para adicionar perguntas, siga o mesmo formato e mantenha `resposta` como índice.
+*/
+
+/**
+ * Conjunto de perguntas do quiz.
+ * @type {Array<{enunciado: string, alternativas: string[], resposta: number}>}
+ * - `enunciado`: texto da pergunta
+ * - `alternativas`: array de strings com as opções
+ * - `resposta`: índice 0-based da alternativa correta
+ */
 export const perguntas = [
   {
     enunciado: 'Qual é o maior planeta do sistema solar?',
@@ -51,6 +67,10 @@ export const perguntas = [
   },
 ];
 
+/**
+ * Tabela de pontuação exibida na sidebar. Cada índice corresponde a uma rodada.
+ * @type {Array<{acertar: string, parar: string, errar: string}>}
+ */
 export const tabelaPontuacao = [
   { acertar: 'R$ 1 mil', parar: 'R$ 0', errar: 'R$ 0' },
   { acertar: 'R$ 2 mil', parar: 'R$ 1 mil', errar: 'R$ 500' },

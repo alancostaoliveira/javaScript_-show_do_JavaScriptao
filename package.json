@@ -1,0 +1,20 @@
+{
+  "name": "show-do-javascriptao",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Quiz interativo em JavaScript inspirado no Show do Milhão.",
+  "scripts": {
+    "serve": "node scripts/serve.mjs",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.29.0",
+    "eslint": "^9.29.0",
+    "globals": "^16.2.0",
+    "prettier": "^3.5.3"
+  }
+}

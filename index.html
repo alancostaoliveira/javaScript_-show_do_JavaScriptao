@@ -1,4 +1,11 @@
 <!doctype html>
+<!--
+  index.html
+  Página principal do quiz "Show do JavaScriptão".
+  - Estrutura limpa: marcação apenas, sem JS/CSS inline.
+  - Importa `css/styles.css` e `js/script.js` (módulo ES).
+  - Comentários adicionados para facilitar manutenção.
+-->
 <html lang="pt-br">
   <head>
     <meta charset="UTF-8" />
@@ -8,6 +15,7 @@
       content="Quiz interativo inspirado no Show do Milhão para praticar JavaScript."
     />
     <title>Show do JavaScriptão</title>
+    <!-- Fonte e estilos: altere `css/styles.css` para mudanças visuais -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -15,10 +23,12 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="css/styles.css" />
+    <!-- Script principal (módulo ES): contém a lógica do jogo -->
     <script type="module" src="js/script.js"></script>
   </head>
   <body>
     <main class="app">
+      <!-- Painel principal do jogo (conteúdo e interações) -->
       <section class="game-panel">
         <header class="hero">
           <p class="eyebrow">Quiz interativo</p>
@@ -30,6 +40,7 @@
         </header>
 
         <article class="question-card">
+          <!-- Card da pergunta: enunciado + alternativas -->
           <div class="question-meta">
             <span id="progress">Pergunta 1 de 1</span>
             <span class="question-badge">Ao vivo</span>
@@ -40,6 +51,7 @@
           <div id="alternativas" class="alternativas" role="list"></div>
         </article>
 
+        <!-- Ações do jogador: confirmar, parar, reiniciar -->
         <div class="actions">
           <button id="btnConfirmar" class="button button-primary" disabled>
             Confirmar resposta
@@ -51,6 +63,7 @@
         </div>
       </section>
 
+      <!-- Área lateral: status e premiação -->
       <aside class="sidebar">
         <section class="status-card">
           <h3>Resultado</h3>
