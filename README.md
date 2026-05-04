@@ -2,6 +2,8 @@
 
 Pequeno quiz interativo inspirado no "Show do Milhão" para treinar JavaScript.
 
+[Teste](https://alancostaoliveira.github.io/javaScript_-show_do_JavaScriptao/)
+
 Estrutura do projeto
 
 - `index.html` — página principal.
@@ -67,10 +69,6 @@ Observação: a persistência já está implementada via `localStorage`. Use o b
 Uma interface está disponível para limpar o progresso salvo diretamente na aplicação:
 
 - Botão: **Limpar progresso** — localizado no painel lateral (Resultado). Remove o snapshot salvo e o melhor prêmio gravado.
-- Feedback: ao limpar, a aplicação exibe uma notificação breve (toast) no rodapé confirmando a ação.
+- Feedback: ao limpar, a aplicação exibe uma notificação breve no rodapé confirmando a ação.
 
 Se preferir, limpe os dados manualmente pelo DevTools conforme citado acima.
-
----
-
-Se quiser, eu gero um `package.json` com um script `serve` e configuro ESLint/Prettier.
