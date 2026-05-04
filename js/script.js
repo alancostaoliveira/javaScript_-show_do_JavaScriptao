@@ -18,6 +18,51 @@ const progress = document.getElementById('progress');
 const tabelaLista = document.getElementById('tabelaPontuacao');
 const btnLimpar = document.getElementById('btnLimpar');
 
+// Durações padrão das animações (em ms). Centralizado para consistência.
+const DURATIONS = {
+  questionEnter: 380,
+  revealCorrect: 480,
+  revealIncorrect: 420,
+  pulseBest: 800,
+  toast: 2000,
+  nextDelay: 600,
+};
+
+// Multiplicador de velocidade (1 = normal). Use `setAnimationSpeed()` para ajustar.
+const speedMultiplier = { value: 1 };
+
+/**
+ * Retorna a duração efetiva considerando o multiplicador.
+ * @param {string} name
+ * @returns {number}
+ */
+function getDuration(name) {
+  const base = DURATIONS[name] ?? 0;
+  return Math.max(0, Math.round(base * (speedMultiplier.value || 1)));
+}
+
+/**
+ * Ajusta o multiplicador de velocidade das animações em tempo de execução.
+ * Expõe `window.setAnimationSpeed(mult)` para testes rápidos.
+ * @param {number} mult
+ */
+function setAnimationSpeed(mult) {
+  const m = Number(mult) || 1;
+  speedMultiplier.value = Math.max(0.25, Math.min(3, m));
+  showToast(`Velocidade x${speedMultiplier.value}`);
+}
+window.setAnimationSpeed = setAnimationSpeed;
+// Atalhos: + para acelerar, - para desacelerar, 0 para reset
+window.addEventListener('keydown', (ev) => {
+  if (ev.key === '+') {
+    setAnimationSpeed(Math.max(0.25, speedMultiplier.value * 0.8));
+  } else if (ev.key === '-') {
+    setAnimationSpeed(Math.min(3, speedMultiplier.value * 1.25));
+  } else if (ev.key === '0') {
+    setAnimationSpeed(1);
+  }
+});
+
 /**
  * Estado local da aplicação.
  * @typedef {Object} Estado
@@ -40,6 +85,7 @@ const estado = {
 // Chaves usadas no localStorage para persistência
 const BEST_KEY = 'show_js_melhor_indice';
 const STATE_KEY = 'show_js_estado';
+const SCHEMA_VERSION = 1;
 
 /**
  * Atualiza o elemento `#melhorPontuacao` com o texto do índice salvo.
@@ -56,6 +102,8 @@ function updateBestUI(idx) {
   }
   el.textContent =
     tabelaPontuacao[Math.min(idx, tabelaPontuacao.length - 1)].acertar;
+  // Anima o melhor prêmio quando atualizado
+  animateElement(el, 'pulse-best', DURATIONS.pulseBest);
 }
 
 /**
@@ -94,14 +142,19 @@ function saveBestIndex(idx) {
 
 /**
  * Salva um snapshot do estado atual para permitir retomada.
+ * Não salva se o jogo já está encerrado (evita carregar jogo morto).
  */
 function saveStateToStorage() {
   try {
+    // Não salva snapshot de jogo encerrado
+    if (estado.encerrado) {
+      return;
+    }
     const payload = {
+      v: SCHEMA_VERSION,
       embaralhadasIdx: estado.embaralhadas.map((p) => perguntas.indexOf(p)),
       indiceAtual: estado.indiceAtual,
       pontuacao: estado.pontuacao,
-      encerrado: estado.encerrado,
     };
     localStorage.setItem(STATE_KEY, JSON.stringify(payload));
   } catch {
@@ -120,7 +173,11 @@ function loadStateFromStorage() {
       return false;
     }
     const payload = JSON.parse(raw);
-    if (!payload || !Array.isArray(payload.embaralhadasIdx)) {
+    // Validar schema version
+    if (!payload || payload.v !== SCHEMA_VERSION) {
+      return false;
+    }
+    if (!Array.isArray(payload.embaralhadasIdx)) {
       return false;
     }
     const arr = payload.embaralhadasIdx
@@ -132,7 +189,8 @@ function loadStateFromStorage() {
     estado.embaralhadas = arr;
     estado.indiceAtual = Number(payload.indiceAtual) || 0;
     estado.pontuacao = payload.pontuacao || estado.pontuacao;
-    estado.encerrado = !!payload.encerrado;
+    // Não restaura estado encerrado
+    estado.encerrado = false;
     return true;
   } catch {
     return false;
@@ -188,13 +246,33 @@ function showToast(text, timeout = 2000) {
     void t.offsetHeight;
     t.classList.add('show');
 
-    setTimeout(() => {
-      t.classList.remove('show');
-      setTimeout(() => container.removeChild(t), 250);
-    }, timeout);
+    setTimeout(
+      () => {
+        t.classList.remove('show');
+        setTimeout(() => container.removeChild(t), 250);
+      },
+      timeout ?? getDuration('toast'),
+    );
   } catch {
     // ignore visual failures
   }
+}
+
+/**
+ * Aplica uma classe de animação a um elemento e a remove após o fim.
+ * @param {HTMLElement} el
+ * @param {string} className
+ * @param {number} [duration=500]
+ */
+function animateElement(el, className, duration = 500) {
+  if (!el) {
+    return;
+  }
+  el.classList.add(className);
+  const to = Number(duration) || 500;
+  setTimeout(() => {
+    el.classList.remove(className);
+  }, to);
 }
 
 /* Embaralhador (Fisher–Yates simplificado via sort):
@@ -321,9 +399,11 @@ function renderizaPergunta() {
 
       document.querySelectorAll('.alternativa').forEach((item) => {
         item.classList.remove('selecionada');
+        item.setAttribute('aria-pressed', 'false');
       });
 
       botao.classList.add('selecionada');
+      botao.setAttribute('aria-pressed', 'true');
       estado.selecionada = indice;
       btnConfirmar.disabled = false;
       mensagem.textContent = `Alternativa ${botao.dataset.letter} selecionada.`;
@@ -338,6 +418,14 @@ function renderizaPergunta() {
   atualizaIndicadores();
   atualizaTabela();
   mensagem.textContent = 'Escolha uma alternativa para continuar.';
+  // Anima a entrada da pergunta
+  const questionCard = document.querySelector('.question-card');
+  animateElement(questionCard, 'question-enter', getDuration('questionEnter'));
+  // Foca a primeira alternativa para navegação por teclado
+  const firstAlt = alternativasContainer.querySelector('.alternativa');
+  if (firstAlt) {
+    firstAlt.focus();
+  }
 }
 
 /* Verifica a resposta selecionada, atualiza pontuação e avança/encerra.
@@ -360,8 +448,16 @@ function confirmaResposta() {
 
   if (acertou) {
     estado.pontuacao = formataPremio(estado.indiceAtual);
+    mensagem.setAttribute('aria-live', 'assertive');
     mensagem.textContent = `Correto. A resposta era ${respostaCorreta}.`;
-    // Atualiza melhor índice e persiste progresso
+    // Anima a alternativa correta
+    const selectedBtn = document.querySelector(
+      `.alternativa[data-index="${estado.selecionada}"]`,
+    );
+    animateElement(selectedBtn, 'reveal-correct', getDuration('revealCorrect'));
+    // Restaurar aria-live para comportamento educado
+    setTimeout(() => mensagem.setAttribute('aria-live', 'polite'), 1200);
+    // Atualiza melhor éndice e persiste progresso
     saveBestIndex(estado.indiceAtual);
     saveStateToStorage();
     estado.indiceAtual += 1;
@@ -376,7 +472,7 @@ function confirmaResposta() {
 
     setTimeout(() => {
       renderizaPergunta();
-    }, 900);
+    }, getDuration('nextDelay'));
     return;
   }
 
@@ -385,13 +481,24 @@ function confirmaResposta() {
     tabelaPontuacao[
       Math.min(estado.indiceAtual, tabelaPontuacao.length - 1)
     ].errar;
+  mensagem.setAttribute('aria-live', 'assertive');
   mensagem.textContent = `Errado. A resposta certa era ${respostaCorreta}.`;
+  // Anima a alternativa errada com shake
+  const selectedBtn = document.querySelector(
+    `.alternativa[data-index="${estado.selecionada}"]`,
+  );
+  animateElement(
+    selectedBtn,
+    'reveal-incorrect',
+    getDuration('revealIncorrect'),
+  );
+  setTimeout(() => mensagem.setAttribute('aria-live', 'polite'), 1200);
   // Persiste o resultado parcial e marca melhor se for o caso
   saveBestIndex(Math.min(estado.indiceAtual, tabelaPontuacao.length - 1));
   saveStateToStorage();
   setTimeout(
     () => encerraJogo(`Fim de jogo. Você levou ${estado.pontuacao}.`),
-    900,
+    getDuration('nextDelay'),
   );
 }
 

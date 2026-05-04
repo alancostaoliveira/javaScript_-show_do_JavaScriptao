@@ -393,3 +393,110 @@ h1 {
   opacity: 1;
   transform: translateY(0);
 }
+
+/* Respeitar a preferência do usuário por reduzir animações */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+    animation-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+  .alternativa,
+  .toast,
+  .question-card,
+  #melhorPontuacao {
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Animações de pergunta e resposta */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes correctFeedback {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes incorrectShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+/* Classes para aplicar animações */
+.question-card.question-enter {
+  animation: slideInRight 400ms ease;
+}
+
+.alternativa.reveal-correct {
+  animation: correctFeedback 500ms ease;
+  border-color: rgba(76, 175, 80, 0.8);
+  background: rgba(76, 175, 80, 0.15);
+  color: #4caf50;
+}
+
+.alternativa.reveal-incorrect {
+  animation: incorrectShake 400ms ease;
+  border-color: rgba(244, 67, 54, 0.8);
+  background: rgba(244, 67, 54, 0.15);
+  color: #f44336;
+}
+
+#melhorPontuacao {
+  transition:
+    color 300ms ease,
+    text-shadow 300ms ease;
+}
+
+#melhorPontuacao.pulse-best {
+  animation: pulse 800ms ease 2;
+  color: var(--primary-strong);
+  text-shadow: 0 0 12px rgba(255, 193, 7, 0.5);
+}
