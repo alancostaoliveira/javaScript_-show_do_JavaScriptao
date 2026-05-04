@@ -72,3 +72,46 @@ Uma interface está disponível para limpar o progresso salvo diretamente na apl
 - Feedback: ao limpar, a aplicação exibe uma notificação breve no rodapé confirmando a ação.
 
 Se preferir, limpe os dados manualmente pelo DevTools conforme citado acima.
+
+## Novidades (últimas mudanças)
+
+- Animações e feedbacks visuais: transições para entrada de perguntas, destaque ao
+  revelar alternativa correta/errada e animação no melhor prêmio.
+- Acessibilidade: `aria-pressed` nas alternativas, gerenciamento de foco e
+  `aria-live` para anúncios assertivos quando necessário.
+- Controle de velocidade: ajuste dinâmico das animações em tempo de execução.
+  - Atalhos: pressione `+` para acelerar, `-` para desacelerar e `0` para resetar.
+  - API pública: `window.setAnimationSpeed(mult)` (ex.: `setAnimationSpeed(0.6)`).
+- Persistência refinada: snapshot com versionamento; não salva snapshot quando
+  o jogo estiver encerrado.
+- Testes: suíte de testes unitários com Vitest incluída (`tests/script.test.js`).
+
+## Como ajustar velocidade das animações
+
+No navegador, com a app aberta, você pode:
+
+- Usar os atalhos do teclado: `+`, `-`, `0`.
+- No console, chamar `setAnimationSpeed(VALOR)` — por exemplo `setAnimationSpeed(1.5)`.
+
+Valores permitidos: entre `0.25` (mais lento) e `3` (mais rápido). O valor padrão é `1`.
+
+## Testes
+
+Rodar todos os testes unitários:
+
+```bash
+npm run test
+```
+
+Executar a interface do Vitest (UI):
+
+```bash
+npm run test:ui
+```
+
+## Changelog resumido
+
+- feat: persistência (localStorage) com versionamento
+- feat: botão "Limpar progresso" + toast de confirmação
+- feat: animações, acessibilidade e controle de velocidade
+- test: adicionar Vitest e testes unitários básicos
